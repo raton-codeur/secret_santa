@@ -1,0 +1,127 @@
+
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+import base64
+
+
+générer les clés
+
+
+formats standardisés des fichiers qui contiennent les clés
+
+
+identifiés par le "format PEM" :
+-----BEGIN PRIVATE KEY-----
+<code en base64>
+-----END PRIVATE KEY-----
+et :
+-----BEGIN PUBLIC KEY-----
+<code en base64>
+-----END PUBLIC KEY-----
+
+
+
+la clé privée est dans une structure binaire ASN.1 = format PKCS8
+
+PKCS8 -> encodée en DER (binaire pur) -> encodé en Base64
+
+
+
+
+
+
+si on retire -----BEGIN PRIVATE KEY----- et -----END PRIVATE KEY----- ça veut dire qu'on a un fichier binaire DER. on peut le dire avec un parseur ASN.1 dont openssl :
+openssl pkcs8 -in private_key.pem -inform PEM -noout -text
+
+
+
+
+
+base64
+
+on prend les octets 6 par 6 pour avoir un code 2^6 = 64 valeurs d'encodage possibles
+
+0–25 = A–Z
+26–51 = a–z
+52–61 = 0–9
+62 = +
+63 = /
+
+ça fonctionne par groupe de 3 octets, donc si il reste de la place dans le dernier groupe on rajoute :
+= (2 octets de padding)
+== (1 octet de padding)
+
+
+
+
+PEM = Privacy Enhanced Mail
+
+c’est un standard d’encapsulation de données cryptographiques dans du texte
+
+
+
+pour la clé publique, c'est pas dans un format PKCS8, c'est en SubjectPublicKeyInfo (= SPKI)
+
+
+ce qu'il y entre c'est la clé en base64.
+
+
+
+
+
+
+charger les clés
+
+    private_key = load_private_key("private_key.pem")
+    public_key = load_public_key("public_key.pem")
+
+
+
+
+encoder une chaine str avec public_key
+
+renvoie une chaîne base64
+plus pratique à stocker/afficher
+
+
+    ciphertext_bytes = public_key.encrypt(
+        plaintext.encode("utf-8"),
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ),
+    )
+    # On encode en base64 pour pouvoir l’imprimer / le mettre dans un JSON, etc.
+    return base64.b64encode(ciphertext_bytes).decode("ascii")
+
+
+
+déchiffrer avec la clé privée
+
+    ciphertext_bytes = base64.b64decode(ciphertext_b64.encode("ascii"))
+
+    plaintext_bytes = private_key.decrypt(
+        ciphertext_bytes,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ),
+    )
+    return plaintext_bytes.decode("utf-8")
+
+
+
+
+
+
+c'est vraiment nécessaire ça ?
+        public_exponent=65537,
+        key_size=2048,
+
+
+    # Clé privée en PEM (PKCS8)
+ça veut dire quoi

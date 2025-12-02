@@ -1,0 +1,21 @@
+<input id="cipher" placeholder="Message chiffré">
+<input id="key" placeholder="Clé">
+<button onclick="decrypt()">Décrypter</button>
+<p id="out"></p>
+
+<script>
+function xorDecrypt(b64, key) {
+    const data = atob(b64);
+    let out = "";
+    for (let i = 0; i < data.length; i++) {
+        out += String.fromCharCode(data.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    }
+    return out;
+}
+
+function decrypt() {
+    const cipher = document.getElementById("cipher").value;
+    const key = document.getElementById("key").value;
+    document.getElementById("out").textContent = xorDecrypt(cipher, key);
+}
+</script>

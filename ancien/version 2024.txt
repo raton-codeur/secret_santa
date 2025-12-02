@@ -1,0 +1,32 @@
+participants = ["Michel", "Monique", "Aurore", "Thomas", "Florian", "Charlotte", "Fred", "Maud", "Line", "Quentin"]
+import random
+random.shuffle(participants) # on mélange.
+
+# on veut associer chaque participant à un autre participant, à qui il devra offrir un cadeau de Nöel.
+
+pas_possible = [("Maud", "Line"), ("Monique", "Michel"), ("Aurore", "Thomas"), ("Charlotte", "Fred")] # la liste des associations qu'on ne veut pas.
+
+obligé = [("Charlotte", "Monique"), ("Fred", "Quentin")] # la liste des associations qu'on veut imposer.
+
+participants_2 = participants.copy() # les participants qu'on va associer aux participants de la première liste.
+
+participants.remove("Charlotte")
+participants.remove("Fred")
+participants_2.remove("Monique")
+participants_2.remove("Quentin")
+
+recommencer = True
+while recommencer :
+	random.shuffle(participants_2)
+	recommencer = False
+	for i in range(len(participants)) :
+		if participants_2[i] == participants[i] : # un participant ne doit pas être associé à lui même.
+			recommencer = True
+		for j in pas_possible :
+			if participants[i] in j and participants_2[i] in j :
+				recommencer = True
+
+for i in range(len(participants)) :
+	print(f"pour {participants[i]} : {participants_2[i]}")
+print("pour Charlotte : Monique")
+print("pour Fred : Quentin")
